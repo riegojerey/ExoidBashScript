@@ -73,11 +73,14 @@ echo "Downloading .NET SDK..."
 wget "$DOTNET_URL" -O "$DOTNET_FILE"
 check_command "Failed to download .NET SDK."
 
-# Step 9: Extract the .NET SDK
-echo "Extracting .NET SDK..."
-mkdir -p "$DOTNET_DIR"
+# Step 9: Create the .NET directory and extract the SDK
+echo "Setting up .NET SDK..."
+if [ ! -d "$DOTNET_DIR" ]; then
+    mkdir -p "$DOTNET_DIR"
+    echo "Directory $DOTNET_DIR created."
+fi
 tar -zxf "$DOTNET_FILE" -C "$DOTNET_DIR"
-check_command "Failed to extract .NET SDK."
+check_command "Failed to extract .NET SDK to $DOTNET_DIR."
 
 # Step 10: Update ~/.bashrc to include environment variables
 echo "Configuring environment variables..."
@@ -94,5 +97,10 @@ fi
 echo "Reloading environment variables..."
 source "$BASHRC"
 check_command "Failed to reload environment variables."
+
+# Step 12: Test the dotnet installation
+echo "Testing .NET installation..."
+dotnet --version
+check_command "dotnet command not found. Check your installation."
 
 echo "All tasks completed successfully."
