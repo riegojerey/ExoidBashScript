@@ -17,21 +17,21 @@ Welcome to the official Raspberry Pi setup script by **ExoidRobotics**. This scr
 
 ### Installation Instructions
 1. **Clone or Download the Repository**:
-   \`\`\`bash
+   ```bash
    git clone https://github.com/riegojerey/ExoidBashScript.git
    cd RaspberryPiSetup
-   \`\`\`
+   ```
 
 2. **Make the Script Executable**:
-   \`\`\`bash
+   ```bash
    chmod +x exoidsetup.sh
-   \`\`\`
+   ```
 
 3. **Run the Script**:
    Execute the script as \`root\` to ensure all tasks are completed successfully:
-   \`\`\`bash
+   ```bash
    sudo ./exoidsetup.sh
-   \`\`\`
+   ```
 
 ### Script Workflow
 1. **Time Synchronization**:
