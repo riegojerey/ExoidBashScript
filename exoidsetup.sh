@@ -1,0 +1,130 @@
+#!/bin/bash
+
+CONFIG_FILE="/etc/systemd/timesyncd.conf"
+BACKUP_FILE="/etc/systemd/timesyncd.conf.bak"
+FALLBACK_NTP="FallbackNTP=time.nist.gov"
+DOTNET_URL="https://download.visualstudio.microsoft.com/download/pr/93a7156d-01ef-40a1-b6e9-bbe7602f7e8b/3c93e90c63b494972c44f073e15bfc26/dotnet-sdk-9.0.101-linux-arm64.tar.gz"
+DOTNET_FILE="dotnet-runtime.tar.gz"
+DOTNET_DIR="$HOME/dotnet"
+
+# Check if the script is run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run as root!"
+    exit 1
+fi
+
+# Step 1: Backup the original configuration file
+if [ -f "$CONFIG_FILE" ]; then
+    cp "$CONFIG_FILE" "$BACKUP_FILE"
+    echo "Backup created: $BACKUP_FILE"
+else
+    echo "Configuration file not found at $CONFIG_FILE!"
+    exit 1
+fi
+
+# Step 2: Add FallbackNTP under [Time] section if not already present
+if grep -q "^\[Time\]" "$CONFIG_FILE"; then
+    if ! grep -q "$FALLBACK_NTP" "$CONFIG_FILE"; then
+        sed -i '/^\[Time\]/a\'"$FALLBACK_NTP" "$CONFIG_FILE"
+        echo "Added $FALLBACK_NTP to $CONFIG_FILE."
+    else
+        echo "$FALLBACK_NTP is already present in $CONFIG_FILE."
+    fi
+else
+    echo "[Time] section not found in $CONFIG_FILE. Adding it."
+    echo -e "\n[Time]\n$FALLBACK_NTP" >> "$CONFIG_FILE"
+fi
+
+# Step 3: Enable NTP synchronization
+echo "Enabling NTP synchronization..."
+timedatectl set-ntp true
+if [ $? -eq 0 ]; then
+    echo "NTP synchronization enabled."
+else
+    echo "Failed to enable NTP synchronization."
+    exit 1
+fi
+
+# Step 4: Restart the systemd-timesyncd service
+echo "Restarting systemd-timesyncd service..."
+systemctl restart systemd-timesyncd
+if [ $? -eq 0 ]; then
+    echo "systemd-timesyncd service restarted successfully."
+else
+    echo "Failed to restart systemd-timesyncd service."
+    exit 1
+fi
+
+# Step 5: Update the package lists
+echo "Updating package lists..."
+apt update
+if [ $? -eq 0 ]; then
+    echo "Package lists updated successfully."
+else
+    echo "Failed to update package lists."
+    exit 1
+fi
+
+# Step 6: Perform a full system upgrade
+echo "Performing a full system upgrade..."
+apt full-upgrade -y
+if [ $? -eq 0 ]; then
+    echo "System upgraded successfully."
+else
+    echo "Failed to perform system upgrade."
+    exit 1
+fi
+
+# Step 7: Install required packages
+echo "Installing required packages..."
+apt install -y wget tar libunwind8 libicu-dev
+if [ $? -eq 0 ]; then
+    echo "Required packages installed successfully."
+else
+    echo "Failed to install required packages."
+    exit 1
+fi
+
+# Step 8: Download the .NET SDK
+echo "Downloading .NET SDK..."
+wget "$DOTNET_URL" -O "$DOTNET_FILE"
+if [ $? -eq 0 ]; then
+    echo ".NET SDK downloaded successfully to $DOTNET_FILE."
+else
+    echo "Failed to download .NET SDK."
+    exit 1
+fi
+
+# Step 9: Extract the .NET SDK
+echo "Extracting .NET SDK..."
+mkdir -p "$DOTNET_DIR"
+tar -zxf "$DOTNET_FILE" -C "$DOTNET_DIR"
+if [ $? -eq 0 ]; then
+    echo ".NET SDK extracted to $DOTNET_DIR."
+else
+    echo "Failed to extract .NET SDK."
+    exit 1
+fi
+
+# Step 10: Update ~/.bashrc to include environment variables
+echo "Configuring environment variables..."
+BASHRC="$HOME/.bashrc"
+if ! grep -q "export DOTNET_ROOT=$DOTNET_DIR" "$BASHRC"; then
+    echo "export DOTNET_ROOT=$DOTNET_DIR" >> "$BASHRC"
+    echo "export PATH=\$PATH:\$DOTNET_DIR" >> "$BASHRC"
+    echo "Environment variables added to $BASHRC."
+else
+    echo "Environment variables already present in $BASHRC."
+fi
+
+# Step 11: Reload ~/.bashrc
+echo "Reloading environment variables..."
+source "$BASHRC"
+if [ $? -eq 0 ]; then
+    echo "Environment variables reloaded successfully."
+else
+    echo "Failed to reload environment variables."
+    exit 1
+fi
+
+echo "All tasks completed successfully."
