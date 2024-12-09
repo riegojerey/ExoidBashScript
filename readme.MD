@@ -14,7 +14,10 @@ Welcome to the official Raspberry Pi setup script by **ExoidRobotics**. This scr
 ### Prerequisites
 - A Raspberry Pi with Raspberry Pi OS installed.
 - Administrative (`sudo`) privileges to run the script.
-
+- create a `dotnet` directory **outside of the cloned repository**.
+```
+mkdir -p $HOME/dotnet
+```
 ### Installation Instructions
 1. **Clone or Download the Repository**:
    ```bash
