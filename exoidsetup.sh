@@ -7,6 +7,14 @@ DOTNET_URL="https://download.visualstudio.microsoft.com/download/pr/93a7156d-01e
 DOTNET_FILE="dotnet-runtime.tar.gz"
 DOTNET_DIR="$HOME/dotnet"
 
+# Function to check the last command status
+check_command() {
+    if [ $? -ne 0 ]; then
+        echo "Error: $1"
+        exit 1
+    fi
+}
+
 # Check if the script is run as root
 if [ "$EUID" -ne 0 ]; then
     echo "This script must be run as root!"
@@ -38,80 +46,45 @@ fi
 # Step 3: Enable NTP synchronization
 echo "Enabling NTP synchronization..."
 timedatectl set-ntp true
-if [ $? -eq 0 ]; then
-    echo "NTP synchronization enabled."
-else
-    echo "Failed to enable NTP synchronization."
-    exit 1
-fi
+check_command "Failed to enable NTP synchronization."
 
 # Step 4: Restart the systemd-timesyncd service
 echo "Restarting systemd-timesyncd service..."
 systemctl restart systemd-timesyncd
-if [ $? -eq 0 ]; then
-    echo "systemd-timesyncd service restarted successfully."
-else
-    echo "Failed to restart systemd-timesyncd service."
-    exit 1
-fi
+check_command "Failed to restart systemd-timesyncd service."
 
 # Step 5: Update the package lists
 echo "Updating package lists..."
-apt update
-if [ $? -eq 0 ]; then
-    echo "Package lists updated successfully."
-else
-    echo "Failed to update package lists."
-    exit 1
-fi
+apt update -y
+check_command "Failed to update package lists."
 
 # Step 6: Perform a full system upgrade
 echo "Performing a full system upgrade..."
 apt full-upgrade -y
-if [ $? -eq 0 ]; then
-    echo "System upgraded successfully."
-else
-    echo "Failed to perform system upgrade."
-    exit 1
-fi
+check_command "Failed to perform system upgrade."
 
 # Step 7: Install required packages
 echo "Installing required packages..."
 apt install -y wget tar libunwind8 libicu-dev
-if [ $? -eq 0 ]; then
-    echo "Required packages installed successfully."
-else
-    echo "Failed to install required packages."
-    exit 1
-fi
+check_command "Failed to install required packages."
 
 # Step 8: Download the .NET SDK
 echo "Downloading .NET SDK..."
 wget "$DOTNET_URL" -O "$DOTNET_FILE"
-if [ $? -eq 0 ]; then
-    echo ".NET SDK downloaded successfully to $DOTNET_FILE."
-else
-    echo "Failed to download .NET SDK."
-    exit 1
-fi
+check_command "Failed to download .NET SDK."
 
 # Step 9: Extract the .NET SDK
 echo "Extracting .NET SDK..."
 mkdir -p "$DOTNET_DIR"
 tar -zxf "$DOTNET_FILE" -C "$DOTNET_DIR"
-if [ $? -eq 0 ]; then
-    echo ".NET SDK extracted to $DOTNET_DIR."
-else
-    echo "Failed to extract .NET SDK."
-    exit 1
-fi
+check_command "Failed to extract .NET SDK."
 
 # Step 10: Update ~/.bashrc to include environment variables
 echo "Configuring environment variables..."
 BASHRC="$HOME/.bashrc"
 if ! grep -q "export DOTNET_ROOT=$DOTNET_DIR" "$BASHRC"; then
     echo "export DOTNET_ROOT=$DOTNET_DIR" >> "$BASHRC"
-    echo "export PATH=\$PATH:\$DOTNET_DIR" >> "$BASHRC"
+    echo "export PATH=\$PATH:$DOTNET_DIR" >> "$BASHRC"
     echo "Environment variables added to $BASHRC."
 else
     echo "Environment variables already present in $BASHRC."
@@ -120,11 +93,6 @@ fi
 # Step 11: Reload ~/.bashrc
 echo "Reloading environment variables..."
 source "$BASHRC"
-if [ $? -eq 0 ]; then
-    echo "Environment variables reloaded successfully."
-else
-    echo "Failed to reload environment variables."
-    exit 1
-fi
+check_command "Failed to reload environment variables."
 
 echo "All tasks completed successfully."
