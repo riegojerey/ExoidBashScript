@@ -4,6 +4,9 @@ CONFIG_FILE="/etc/systemd/timesyncd.conf"
 BACKUP_FILE="/etc/systemd/timesyncd.conf.bak"
 FALLBACK_NTP="FallbackNTP=time.nist.gov"
 
+# Initialize the timer
+SECONDS=0
+
 # Function to check the last command status
 check_command() {
     if [ $? -ne 0 ]; then
@@ -59,29 +62,29 @@ check_command "Failed to restart systemd-timesyncd service."
 
 progress 30 "Updating package lists..."
 # Step 5: Update the package lists
-apt update -y
+apt update -y > /dev/null
 check_command "Failed to update package lists."
 
 progress 40 "Performing a full system upgrade..."
 # Step 6: Perform a full system upgrade
-apt full-upgrade -y
+apt full-upgrade -y > /dev/null
 check_command "Failed to perform system upgrade."
 
 progress 50 "Installing required packages..."
 # Step 7: Install required packages
-apt install -y wget tar libunwind8 libicu-dev
+apt install -y wget tar libunwind8 libicu-dev > /dev/null
 check_command "Failed to install required packages."
 
 progress 55 "Removing conflicting packages for Docker..."
 # Step 8: Uninstall conflicting packages
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do
-    apt-get remove -y "$pkg"
+    apt-get remove -y "$pkg" > /dev/null
 done
 check_command "Failed to remove conflicting packages."
 
 progress 60 "Setting up Docker's APT repository..."
 # Step 9: Set up Docker's apt repository
-apt-get install -y ca-certificates curl
+apt-get install -y ca-certificates curl > /dev/null
 check_command "Failed to install dependencies for Docker."
 
 install -m 0755 -d /etc/apt/keyrings
@@ -93,12 +96,12 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update -y
+apt-get update -y > /dev/null
 check_command "Failed to set up Docker's APT repository."
 
 progress 70 "Installing Docker..."
 # Step 10: Install Docker
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin > /dev/null
 check_command "Failed to install Docker."
 
 progress 80 "Pulling CodeProject.AI image..."
@@ -113,3 +116,7 @@ check_command "Failed to start CodeProject.AI container."
 
 progress 100 "All tasks completed successfully!"
 echo -e "\nNTP synchronization configured, Docker installed, and CodeProject.AI container setup completed successfully."
+
+# Display total elapsed time
+ELAPSED_TIME=$SECONDS
+echo -e "\nScript completed in $(($ELAPSED_TIME / 60)) minutes and $(($ELAPSED_TIME % 60)) seconds."
