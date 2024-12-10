@@ -1,23 +1,17 @@
 # ExoidRobotics Raspberry Pi Setup Script
 
-### Overview
-Welcome to the official Raspberry Pi setup script by **ExoidRobotics**. This script automates the installation and configuration process for setting up **CodeProject.AI** and the .NET SDK on a Raspberry Pi, along with necessary system updates and configurations.
-
-### Features
+## Features
 - Configures NTP synchronization for accurate time settings.
 - Updates and upgrades the Raspberry Pi system packages.
 - Installs essential dependencies (`wget`, `tar`, `libunwind8`, `libicu-dev`).
-- Downloads and extracts the .NET SDK.
-- Configures environment variables for .NET.
-- Prepares your Raspberry Pi for **CodeProject.AI** integration.
+- Sets up **Docker** and runs the **CodeProject.AI** container.
+- Ensures the container auto-restarts on system reboot.
+- Provides a clear progress indication during execution.
 
-### Prerequisites
+## Prerequisites
 - A Raspberry Pi with Raspberry Pi OS installed.
 - Administrative (`sudo`) privileges to run the script.
-- create a `dotnet` directory **outside of the cloned repository**.
-```
-mkdir -p $HOME/dotnet
-```
+
 ### Installation Instructions
 1. **Clone or Download the Repository**:
    ```bash
@@ -36,38 +30,3 @@ mkdir -p $HOME/dotnet
    sudo ./exoidsetup.sh
    ```
 
-### Script Workflow
-1. **Time Synchronization**:
-   - Configures `/etc/systemd/timesyncd.conf` to use `FallbackNTP=time.nist.gov`.
-   - Enables NTP synchronization and restarts the time synchronization service.
-
-2. **System Update**:
-   - Updates the package list and performs a full system upgrade.
-
-3. **Dependency Installation**:
-   - Installs required packages: `wget`, `tar`, `libunwind8`, `libicu-dev`.
-
-4. **.NET SDK Setup**:
-   - Downloads the .NET SDK from the official Microsoft source.
-   - Extracts the SDK to `$HOME/dotnet`.
-
-5. **Environment Configuration**:
-   - Adds environment variables to `~/.bashrc`:
-     - `DOTNET_ROOT=$HOME/dotnet`
-     - Updates the `PATH` to include `$HOME/dotnet`.
-   - Reloads the environment variables.
-
-### Post-Setup Verification
-After running the script, verify the setup:
-
-1. **Check .NET Installation**:
-   ```bash
-   dotnet --version
-   ```
-   You should see the installed version of the .NET SDK.
-
-2. **Check Time Synchronization**:
-   ```bash
-   timedatectl
-   ```
-   Ensure NTP is active and synchronized.
