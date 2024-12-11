@@ -40,7 +40,7 @@ progress 10 "Configuring NTP settings..."
 # Step 2: Add FallbackNTP under [Time] section if not already present
 if grep -q "^\[Time\]" "$CONFIG_FILE"; then
     if ! grep -q "$FALLBACK_NTP" "$CONFIG_FILE"; then
-        sed -i '/^\[Time\]/a\'$FALLBACK_NTP" "$CONFIG_FILE"
+        sed -i "/^\[Time\]/a\\$FALLBACK_NTP" "$CONFIG_FILE"
         echo "Added $FALLBACK_NTP to $CONFIG_FILE."
     else
         echo "$FALLBACK_NTP is already present in $CONFIG_FILE."
@@ -105,7 +105,7 @@ check_command "Failed to download CodeProject.AI."
 unzip codeproject.zip
 check_command "Failed to unzip CodeProject.AI package."
 
-CODEPROJECT_DEB="codeproject.ai-server_2.9.5_Ubuntu_x64.deb"
+CODEPROJECT_DEB="codeproject.ai-server_2.9.5_Ubuntu_arm64.deb"
 sudo dpkg -i "$CODEPROJECT_DEB"
 check_command "Failed to install CodeProject.AI."
 
