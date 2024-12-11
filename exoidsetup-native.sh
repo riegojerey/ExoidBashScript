@@ -77,13 +77,14 @@ check_command "Failed to install required packages."
 
 progress 60 "Downloading and installing .NET 9..."
 # Step 8: Download and install .NET 9
-mkdir -p "$DOTNET_INSTALL_DIR"
 DOTNET_URL="https://download.visualstudio.microsoft.com/download/pr/93a7156d-01ef-40a1-b6e9-bbe7602f7e8b/3c93e90c63b494972c44f073e15bfc26/dotnet-sdk-9.0.101-linux-arm64.tar.gz"
 DOTNET_INSTALL_DIR="$HOME/dotnet"
 
+mkdir -p "$DOTNET_INSTALL_DIR"
+check_command "Failed to create directory: $DOTNET_INSTALL_DIR."
+
 wget -O dotnet-sdk.tar.gz "$DOTNET_URL"
 check_command "Failed to download .NET SDK."
-
 
 tar zxf dotnet-sdk.tar.gz -C "$DOTNET_INSTALL_DIR"
 check_command "Failed to extract .NET SDK."
@@ -92,8 +93,8 @@ export DOTNET_ROOT="$DOTNET_INSTALL_DIR"
 export PATH="$PATH:$DOTNET_INSTALL_DIR"
 
 # Add to bashrc
-echo "export DOTNET_ROOT=$DOTNET_INSTALL_DIR" >> "$HOME/.bashrc"
-echo "export PATH=\$PATH:$DOTNET_INSTALL_DIR" >> "$HOME/.bashrc"
+echo "export DOTNET_ROOT=\"$DOTNET_INSTALL_DIR\"" >> "$HOME/.bashrc"
+echo "export PATH=\"\$PATH:$DOTNET_INSTALL_DIR\"" >> "$HOME/.bashrc"
 source "$HOME/.bashrc"
 
 progress 70 "Downloading and installing CodeProject.AI..."
