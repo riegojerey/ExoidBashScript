@@ -105,11 +105,11 @@ docker --version > /dev/null
 check_command "Docker is not installed or not functioning correctly."
 
 progress 80 "Pulling CodeProject.AI image..."
-docker pull codeproject/ai-server:rpi64-2.9.5 > /dev/null
+docker pull codeproject/ai-server:rpi64-2.9.6 > /dev/null
 check_command "Failed to pull CodeProject.AI Docker image."
 
 progress 90 "Running CodeProject.AI container..."
-docker run --name CodeProject.AI -d --restart unless-stopped -p 32168:32168 codeproject/ai-server:rpi64-2.9.5 > /dev/null
+docker run --name CodeProject.AI -d --restart unless-stopped -p 32168:32168 codeproject/ai-server:rpi64-2.9.6 > /dev/null
 check_command "Failed to start CodeProject.AI container."
 
 progress 100 "All tasks completed successfully!"
